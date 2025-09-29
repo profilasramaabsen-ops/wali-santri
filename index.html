@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .login-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 400px;
+            padding: 40px 30px;
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .login-header h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .login-header p {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        
+        .form-control:focus {
+            border-color: #4a6cf7;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(74, 108, 247, 0.2);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+        }
+        
+        .success-message {
+            color: #2ecc71;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 10px;
+        }
+        
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid #fff;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h1>Login Sistem</h1>
+            <p>Masukkan username dan password Anda</p>
+        </div>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" class="form-control" placeholder="Masukkan username" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" class="form-control" placeholder="Masukkan password" required>
+            </div>
+            
+            <button type="submit" class="btn" id="loginBtn">
+                <span id="btnText">Login</span>
+                <div class="loading" id="loadingIndicator">
+                    <div class="spinner"></div> Memproses...
+                </div>
+            </button>
+            
+            <div class="error-message" id="errorMessage">
+                Username atau password salah!
+            </div>
+            
+            <div class="success-message" id="successMessage">
+                Login berhasil! Mengarahkan...
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Data kredensial dan link tujuan
+        const credentials = {
+            "ppbhasydc21448": { password: "97428", link: "https://drive.google.com/drive/folders/1h0ngdZoC20BNNXWoQfZ5dGImnyI6O4rE?usp=drive_link" },
+            "ppbhasylr75853": { password: "71506", link: "https://drive.google.com/drive/folders/1Mvo_nGffqqn3FO7sOxdA6JttYgyfTQDR?usp=drive_link" },
+            "ppbhasyjv44012": { password: "64925", link: "https://drive.google.com/drive/folders/1K-oiLjNQxnAsfZo_n9AnajsdCXLwq5Pf?usp=drive_link" },
+            "ppbhasydc11143": { password: "43781", link: "https://drive.google.com/drive/folders/16BRgL0EtvW3Y-Wggy1GvVEMerWKtjsJr?usp=sharing" },
+            "ppbhasyxt52090": { password: "90146", link: "https://drive.google.com/drive/folders/1Qu0dJwqvaljL1siQN9K84vW41s5u6S6G?usp=sharing" },
+            "ppbhasylj96427": { password: "61074", link: "https://drive.google.com/drive/folders/10g5mUJRwID68HFRLCedYBGqk5Lt7Pn4b?usp=sharing" },
+            "ppbhasyek93532": { password: "65931", link: "https://drive.google.com/drive/folders/1FH36OY6Vebk6cF_GNmruN-FqzE3NkPDk?usp=sharing" },
+            "ppbhasywb01136": { password: "72890", link: "https://drive.google.com/drive/folders/1AGA7aNV1dRenFWjjv50xycqZQd_DVUFe?usp=sharing" },
+            "ppbhasyxr26047": { password: "10926", link: "https://drive.google.com/drive/folders/1LWe-zHqpF0N4p1q4aM2Brk-eA_MR5Kag?usp=sharing" },
+            "ppbhasypq89740": { password: "25910", link: "https://drive.google.com/drive/folders/1uuQKtzB9fGWvn8p1ZLU_ZZblXjYxdKWr?usp=sharing" },
+            "ppbhasybh55163": { password: "56021", link: "https://drive.google.com/drive/folders/1kaCOzeG_sW2yspZLBgAvJSWu7fwLjURS?usp=sharing" },
+            "ppbhasyhq56394": { password: "48327", link: "https://drive.google.com/drive/folders/1-tlDbKlPEn2tcimNASfFLHYNedAmdTMx?usp=sharing" },
+            "ppbhasybi03408": { password: "71342", link: "https://drive.google.com/drive/folders/1NcUyJsj984Cv-pOHe22UxrbDYr-7xhf5?usp=sharing" },
+            "ppbhasypb79181": { password: "75413", link: "https://drive.google.com/drive/folders/13yzJinE1MZrOpDj6C6hQy3r3cgX_FyUH?usp=sharing" },
+            "ppbhasyvh48552": { password: "24809", link: "https://drive.google.com/drive/folders/1QMDSCLZZ6510D5pt9ce7P9lYMiWwbf_O?usp=sharing" },
+            "ppbhasytm51673": { password: "34972", link: "https://drive.google.com/drive/folders/1SPi_6GaynF7-tZ0xIkjPK0xJUIa4h3dw?usp=sharing" },
+            "ppbhasysm54117": { password: "40216", link: "https://drive.google.com/drive/folders/1wX2RCSUagmWITyycsi5PhHK3KgZWSyzZ?usp=sharing" },
+            "ppbhasypd55212": { password: "29170", link: "https://drive.google.com/drive/folders/11qt5xX4AzKWhQeWCRsmr9A9QnlGMK4md?usp=sharing" }
+        };
+
+        // Mendapatkan elemen DOM
+        const loginForm = document.getElementById('loginForm');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const loginBtn = document.getElementById('loginBtn');
+        const btnText = document.getElementById('btnText');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.getElementById('successMessage');
+
+        // Fungsi untuk menampilkan pesan error
+        function showError() {
+            errorMessage.style.display = 'block';
+            successMessage.style.display = 'none';
+        }
+
+        // Fungsi untuk menampilkan pesan sukses
+        function showSuccess() {
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'block';
+        }
+
+        // Fungsi untuk menampilkan loading
+        function showLoading() {
+            btnText.style.display = 'none';
+            loadingIndicator.style.display = 'block';
+        }
+
+        // Fungsi untuk menyembunyikan loading
+        function hideLoading() {
+            btnText.style.display = 'block';
+            loadingIndicator.style.display = 'none';
+        }
+
+        // Event listener untuk form login
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+            
+            // Validasi input
+            if (!username || !password) {
+                showError();
+                return;
+            }
+            
+            // Tampilkan loading
+            showLoading();
+            
+            // Simulasi proses validasi (biasanya ini akan dilakukan di server)
+            setTimeout(() => {
+                // Cek apakah username ada di database
+                if (credentials.hasOwnProperty(username)) {
+                    // Cek apakah password sesuai
+                    if (credentials[username].password === password) {
+                        // Login berhasil
+                        showSuccess();
+                        
+                        // Redirect ke link tujuan setelah 2 detik
+                        setTimeout(() => {
+                            window.location.href = credentials[username].link;
+                        }, 2000);
+                    } else {
+                        // Password salah
+                        showError();
+                        hideLoading();
+                    }
+                } else {
+                    // Username tidak ditemukan
+                    showError();
+                    hideLoading();
+                }
+            }, 1500); // Simulasi waktu validasi
+        });
+    </script>
+</body>
+</html>
