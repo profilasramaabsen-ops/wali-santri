@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 900px;
+        }
+        
+        .login-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            padding: 40px 30px;
+            margin-bottom: 20px;
+        }
+        
+        .admin-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            display: none;
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .login-header h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .login-header p {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        
+        .form-control:focus {
+            border-color: #4a6cf7;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(74, 108, 247, 0.2);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+        }
+        
+        .success-message {
+            color: #2ecc71;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 10px;
+        }
+        
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 3px solid #fff;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .admin-header h2 {
+            color: #333;
+        }
+        
+        .admin-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .user-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .user-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .user-item:last-child {
+            border-bottom: none;
+        }
+        
+        .user-info {
+            flex: 1;
+        }
+        
+        .user-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .action-btn {
+            padding: 5px 10px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .action-btn:hover {
+            background: #e0e0e0;
+        }
+        
+        .edit-form {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+    
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+        import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5NfTf02O0cJMOgcauJoC_-cmJuU80jHE",
+            authDomain: "log-in-a0653.firebaseapp.com",
+            databaseURL: "https://log-in-a0653-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "log-in-a0653",
+            storageBucket: "log-in-a0653.firebasestorage.app",
+            messagingSenderId: "703826163147",
+            appId: "1:703826163147:web:436b92f0be5533ba42b24e",
+            measurementId: "G-RTNY3W3BSW"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        
+        // Ekspor variabel untuk digunakan di script utama
+        window.firebaseDatabase = database;
+        window.firebaseRef = ref;
+        window.firebaseSet = set;
+        window.firebaseOnValue = onValue;
+        window.firebaseRemove = remove;
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="login-container" id="loginContainer">
+            <div class="login-header">
+                <h1>Login Sistem</h1>
+                <p>Masukkan username dan password Anda</p>
+            </div>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" class="form-control" placeholder="Masukkan username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" class="form-control" placeholder="Masukkan password" required>
+                </div>
+                
+                <button type="submit" class="btn" id="loginBtn">
+                    <span id="btnText">Login</span>
+                    <div class="loading" id="loadingIndicator">
+                        <div class="spinner"></div> Memproses...
+                    </div>
+                </button>
+                
+                <div class="error-message" id="errorMessage">
+                    Username atau password salah!
+                </div>
+                
+                <div class="success-message" id="successMessage">
+                    Login berhasil! Mengarahkan...
+                </div>
+            </form>
+        </div>
+        
+        <div class="admin-container" id="adminContainer">
+            <div class="admin-header">
+                <h2>Panel Admin</h2>
+                <div class="admin-controls">
+                    <button class="btn btn-secondary" id="addUserBtn">Tambah User</button>
+                    <button class="btn" id="logoutBtn">Logout</button>
+                </div>
+            </div>
+            
+            <div class="user-list" id="userList">
+                <!-- Daftar user akan ditampilkan di sini -->
+            </div>
+            
+            <div class="edit-form hidden" id="editForm">
+                <h3 id="editFormTitle">Edit User</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editUsername">Username</label>
+                        <input type="text" id="editUsername" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editPassword">Password</label>
+                        <input type="text" id="editPassword" class="form-control" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="editLink">Link Tujuan</label>
+                    <input type="text" id="editLink" class="form-control" required>
+                </div>
+                <div class="form-row">
+                    <button class="btn" id="saveUserBtn">Simpan</button>
+                    <button class="btn btn-secondary" id="cancelEditBtn">Batal</button>
+                </div>
+            </div>
+            
+            <div class="error-message" id="adminErrorMessage"></div>
+            <div class="success-message" id="adminSuccessMessage"></div>
+        </div>
+    </div>
+
+    <script>
+        // Data kredensial default
+        let credentials = {
+            "ppbhasyadmin": { password: "asyadmin", link: "admin" }
+        };
+
+        // Mendapatkan elemen DOM
+        const loginContainer = document.getElementById('loginContainer');
+        const adminContainer = document.getElementById('adminContainer');
+        const loginForm = document.getElementById('loginForm');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const loginBtn = document.getElementById('loginBtn');
+        const btnText = document.getElementById('btnText');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.getElementById('successMessage');
+        const userList = document.getElementById('userList');
+        const addUserBtn = document.getElementById('addUserBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const editForm = document.getElementById('editForm');
+        const editFormTitle = document.getElementById('editFormTitle');
+        const editUsername = document.getElementById('editUsername');
+        const editPassword = document.getElementById('editPassword');
+        const editLink = document.getElementById('editLink');
+        const saveUserBtn = document.getElementById('saveUserBtn');
+        const cancelEditBtn = document.getElementById('cancelEditBtn');
+        const adminErrorMessage = document.getElementById('adminErrorMessage');
+        const adminSuccessMessage = document.getElementById('adminSuccessMessage');
+
+        let currentEditUser = null;
+        let isAddingNewUser = false;
+
+        // Fungsi untuk menampilkan pesan error
+        function showError(message) {
+            errorMessage.textContent = message || 'Username atau password salah!';
+            errorMessage.style.display = 'block';
+            successMessage.style.display = 'none';
+        }
+
+        // Fungsi untuk menampilkan pesan sukses
+        function showSuccess(message) {
+            errorMessage.style.display = 'none';
+            successMessage.textContent = message || 'Login berhasil! Mengarahkan...';
+            successMessage.style.display = 'block';
+        }
+
+        // Fungsi untuk menampilkan loading
+        function showLoading() {
+            btnText.style.display = 'none';
+            loadingIndicator.style.display = 'block';
+        }
+
+        // Fungsi untuk menyembunyikan loading
+        function hideLoading() {
+            btnText.style.display = 'block';
+            loadingIndicator.style.display = 'none';
+        }
+
+        // Fungsi untuk menampilkan pesan error admin
+        function showAdminError(message) {
+            adminErrorMessage.textContent = message;
+            adminErrorMessage.style.display = 'block';
+            adminSuccessMessage.style.display = 'none';
+        }
+
+        // Fungsi untuk menampilkan pesan sukses admin
+        function showAdminSuccess(message) {
+            adminErrorMessage.style.display = 'none';
+            adminSuccessMessage.textContent = message;
+            adminSuccessMessage.style.display = 'block';
+        }
+
+        // Fungsi untuk menampilkan panel admin
+        function showAdminPanel() {
+            loginContainer.style.display = 'none';
+            adminContainer.style.display = 'block';
+            renderUserList();
+        }
+
+        // Fungsi untuk menampilkan panel login
+        function showLoginPanel() {
+            adminContainer.style.display = 'none';
+            loginContainer.style.display = 'block';
+            currentEditUser = null;
+            isAddingNewUser = false;
+            editForm.classList.add('hidden');
+        }
+
+        // Fungsi untuk menyimpan data ke Firebase
+        function saveUserToFirebase(username, userData) {
+            const userRef = window.firebaseRef(window.firebaseDatabase, 'users/' + username);
+            return window.firebaseSet(userRef, userData);
+        }
+
+        // Fungsi untuk menghapus data dari Firebase
+        function deleteUserFromFirebase(username) {
+            const userRef = window.firebaseRef(window.firebaseDatabase, 'users/' + username);
+            return window.firebaseRemove(userRef);
+        }
+
+        // Fungsi untuk memuat data dari Firebase
+        function loadUsersFromFirebase() {
+            const usersRef = window.firebaseRef(window.firebaseDatabase, 'users');
+            
+            window.firebaseOnValue(usersRef, (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    credentials = data;
+                }
+                
+                // Pastikan admin user selalu ada
+                if (!credentials["ppbhasyadmin"]) {
+                    credentials["ppbhasyadmin"] = { password: "asyadmin", link: "admin" };
+                    saveUserToFirebase("ppbhasyadmin", credentials["ppbhasyadmin"]);
+                }
+                
+                renderUserList();
+            }, {
+                onlyOnce: false // Mendengarkan perubahan real-time
+            });
+        }
+
+        // Fungsi untuk merender daftar user
+        function renderUserList() {
+            userList.innerHTML = '';
+            
+            for (const username in credentials) {
+                if (username === 'ppbhasyadmin') continue; // Skip admin user dari daftar
+                
+                const userItem = document.createElement('div');
+                userItem.className = 'user-item';
+                
+                userItem.innerHTML = `
+                    <div class="user-info">
+                        <strong>${username}</strong> - Password: ${credentials[username].password}
+                        <br>
+                        <small>Link: ${credentials[username].link}</small>
+                    </div>
+                    <div class="user-actions">
+                        <button class="action-btn edit-user" data-username="${username}">Edit</button>
+                        <button class="action-btn delete-user" data-username="${username}">Hapus</button>
+                    </div>
+                `;
+                
+                userList.appendChild(userItem);
+            }
+            
+            // Tambahkan event listener untuk tombol edit dan hapus
+            document.querySelectorAll('.edit-user').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const username = this.getAttribute('data-username');
+                    editUser(username);
+                });
+            });
+            
+            document.querySelectorAll('.delete-user').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const username = this.getAttribute('data-username');
+                    deleteUser(username);
+                });
+            });
+        }
+
+        // Fungsi untuk mengedit user
+        function editUser(username) {
+            currentEditUser = username;
+            isAddingNewUser = false;
+            
+            editUsername.value = username;
+            editPassword.value = credentials[username].password;
+            editLink.value = credentials[username].link;
+            
+            editFormTitle.textContent = 'Edit User';
+            editForm.classList.remove('hidden');
+        }
+
+        // Fungsi untuk menghapus user
+        function deleteUser(username) {
+            if (confirm(`Apakah Anda yakin ingin menghapus user ${username}?`)) {
+                delete credentials[username];
+                deleteUserFromFirebase(username)
+                    .then(() => {
+                        renderUserList();
+                        showAdminSuccess(`User ${username} berhasil dihapus`);
+                    })
+                    .catch((error) => {
+                        showAdminError(`Gagal menghapus user: ${error.message}`);
+                    });
+            }
+        }
+
+        // Fungsi untuk menambah user baru
+        function addNewUser() {
+            currentEditUser = null;
+            isAddingNewUser = true;
+            
+            editUsername.value = '';
+            editPassword.value = '';
+            editLink.value = '';
+            
+            editFormTitle.textContent = 'Tambah User Baru';
+            editForm.classList.remove('hidden');
+        }
+
+        // Fungsi untuk menyimpan perubahan user
+        function saveUser() {
+            const username = editUsername.value.trim();
+            const password = editPassword.value.trim();
+            const link = editLink.value.trim();
+            
+            if (!username || !password || !link) {
+                showAdminError('Semua field harus diisi!');
+                return;
+            }
+            
+            if (isAddingNewUser && credentials[username]) {
+                showAdminError('Username sudah ada!');
+                return;
+            }
+            
+            const userData = { password, link };
+            
+            if (isAddingNewUser) {
+                // Tambah user baru
+                saveUserToFirebase(username, userData)
+                    .then(() => {
+                        credentials[username] = userData;
+                        showAdminSuccess(`User ${username} berhasil ditambahkan`);
+                        renderUserList();
+                        editForm.classList.add('hidden');
+                        currentEditUser = null;
+                        isAddingNewUser = false;
+                    })
+                    .catch((error) => {
+                        showAdminError(`Gagal menambahkan user: ${error.message}`);
+                    });
+            } else {
+                // Edit user yang sudah ada
+                const oldUsername = currentEditUser;
+                
+                if (oldUsername !== username) {
+                    // Jika username berubah, hapus yang lama dan buat yang baru
+                    deleteUserFromFirebase(oldUsername)
+                        .then(() => {
+                            return saveUserToFirebase(username, userData);
+                        })
+                        .then(() => {
+                            delete credentials[oldUsername];
+                            credentials[username] = userData;
+                            showAdminSuccess(`User ${username} berhasil diperbarui`);
+                            renderUserList();
+                            editForm.classList.add('hidden');
+                            currentEditUser = null;
+                            isAddingNewUser = false;
+                        })
+                        .catch((error) => {
+                            showAdminError(`Gagal memperbarui user: ${error.message}`);
+                        });
+                } else {
+                    // Jika username tidak berubah, cukup update data
+                    saveUserToFirebase(username, userData)
+                        .then(() => {
+                            credentials[username] = userData;
+                            showAdminSuccess(`User ${username} berhasil diperbarui`);
+                            renderUserList();
+                            editForm.classList.add('hidden');
+                            currentEditUser = null;
+                            isAddingNewUser = false;
+                        })
+                        .catch((error) => {
+                            showAdminError(`Gagal memperbarui user: ${error.message}`);
+                        });
+                }
+            }
+        }
+
+        // Event listener untuk form login
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+            
+            // Validasi input
+            if (!username || !password) {
+                showError('Username dan password harus diisi!');
+                return;
+            }
+            
+            // Tampilkan loading
+            showLoading();
+            
+            // Simulasi proses validasi
+            setTimeout(() => {
+                // Cek apakah username ada di database
+                if (credentials.hasOwnProperty(username)) {
+                    // Cek apakah password sesuai
+                    if (credentials[username].password === password) {
+                        // Login berhasil
+                        showSuccess();
+                        
+                        // Jika admin, tampilkan panel admin
+                        if (username === 'ppbhasyadmin') {
+                            setTimeout(() => {
+                                showAdminPanel();
+                                hideLoading();
+                            }, 1000);
+                        } else {
+                            // Redirect ke link tujuan setelah 2 detik
+                            setTimeout(() => {
+                                window.location.href = credentials[username].link;
+                            }, 2000);
+                        }
+                    } else {
+                        // Password salah
+                        showError('Password salah!');
+                        hideLoading();
+                    }
+                } else {
+                    // Username tidak ditemukan
+                    showError('Username tidak ditemukan!');
+                    hideLoading();
+                }
+            }, 1000); // Simulasi waktu validasi
+        });
+
+        // Event listener untuk tombol tambah user
+        addUserBtn.addEventListener('click', addNewUser);
+
+        // Event listener untuk tombol logout
+        logoutBtn.addEventListener('click', function() {
+            showLoginPanel();
+            usernameInput.value = '';
+            passwordInput.value = '';
+            showAdminSuccess('');
+            showAdminError('');
+        });
+
+        // Event listener untuk tombol simpan user
+        saveUserBtn.addEventListener('click', saveUser);
+
+        // Event listener untuk tombol batal edit
+        cancelEditBtn.addEventListener('click', function() {
+            editForm.classList.add('hidden');
+            currentEditUser = null;
+            isAddingNewUser = false;
+        });
+
+        // Memuat data dari Firebase saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUsersFromFirebase();
+        });
+    </script>
+</body>
+</html>
